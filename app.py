@@ -138,8 +138,7 @@ if prompt:
             """
 
             try:
-                available_models = [m.id for m in client.models.list().data if "whisper" not in m.id and "guard" not in m.id]
-                active_model = available_models[0]
+active_model = "llama-3.1-8b-instant"
                 chat_completion = client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": system_instruction},
