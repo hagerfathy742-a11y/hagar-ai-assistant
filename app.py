@@ -138,9 +138,9 @@ if prompt:
             """
             
 try:
-models = [m.id for m in client.models.list().data if "orpheus" not in m.id and "whisper" not in m.id and "guard" not in m.id]
-active_model = next(iter(models))
-chat_completion = client.chat.completions.create(
+        models = [m.id for m in client.models.list().data if "orpheus" not in m.id and "whisper" not in m.id and "guard" not in m.id]
+        active_model = next(iter(models))
+        chat_completion = client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": system_instruction},
                         {"role": "user", "content": prompt},
