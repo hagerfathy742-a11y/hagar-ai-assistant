@@ -1,13 +1,11 @@
 import os
-import time
 import streamlit as st
 from dotenv import load_dotenv
-from google import genai
-from google.genai import types
+from groq import Groq
 from pypdf import PdfReader
 
 load_dotenv()
-api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
 
 st.set_page_config(page_title="Hagar Company - المساعد الذكي", page_icon="🌟", layout="wide", initial_sidebar_state="collapsed")
 
@@ -123,9 +121,9 @@ if prompt:
 
     with st.chat_message("assistant"):
         if not api_key:
-            st.error("⚠️ تأكد من وضع مفتاح GEMINI_API_KEY في إعدادات Secrets")
+            st.error("⚠️ تأكد من وضع مفتاح GROQ_API_KEY في إعدادات Secrets")
         else:
-            client = genai.Client(api_key=api_key)
+            client = Groq(api_key=api_key)
             system_instruction = f"""
             أنت {assistant_role} تعمل لصالح '{company_name}'.
             أجب على أسئلة العملاء بلباقة واحترافية وباللهجة المصرية المهذبة.
@@ -139,30 +137,17 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-            reply_placeholder = st.empty()
-            full_reply = ""
-            success = False
-
-            for model_name in ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash"]:
-                try:
-                    response = client.models.generate_content_stream(
-                        model=model_name,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            system_instruction=system_instruction,
-                            temperature=0.3,
-                        ),
-                    )
-                    for chunk in response:
-                        if chunk.text:
-                            full_reply += chunk.text
-                            reply_placeholder.markdown(full_reply + "▌")
-                    reply_placeholder.markdown(full_reply)
-                    st.session_state.messages.append({"role": "assistant", "content": full_reply})
-                    success = True
-                    break
-                except Exception:
-                    continue
-
-            if not success:
-                reply_placeholder.warning("السيرفر مزحوم لحظياً، اضغط الزر مرة أخرى.")
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_instruction},
+                        {"role": "user", "content": prompt},
+                    ],
+                    model="llama-3.3-70b-versatile",
+                    temperature=0.3,
+                )
+                reply = chat_completion.choices.message.content
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+            except Exception as e:
+                st.error(f"حدث خطأ: {e}")
