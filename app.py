@@ -10,14 +10,51 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 st.set_page_config(page_title="Hagar Company - المساعد الذكي", page_icon="🌟", layout="wide", initial_sidebar_state="collapsed")
-themes = {
-    "🌸 وردي بنفسجي عصري": "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)",
-}
+
+banner_gradient = "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)"
+
+st.markdown(f"""
+<style>
+    @import url('https://googleapis.com');
+    html, body, [class*="css"] {{
+        font-family: 'Cairo', sans-serif;
+    }}
+    @media (max-width: 768px) {{
+        section[data-testid="stSidebar"] {{
+            display: none !important;
+        }}
+    }}
+    .main-card {{
+        background: {banner_gradient};
+        padding: 24px;
+        border-radius: 18px;
+        color: white;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 20px rgba(236, 72, 153, 0.25);
+        direction: rtl;
+    }}
+    .main-title {{font-size: 1.9rem; font-weight: 700; margin-bottom: 6px;}}
+    .sub-title {{font-size: 1rem; opacity: 0.95;}}
+    div.stButton > button {{
+        border-radius: 12px;
+        border: 1px solid #EC4899;
+        font-weight: 600;
+        direction: rtl;
+        transition: all 0.3s ease;
+    }}
+    div.stButton > button:hover {{
+        background: {banner_gradient};
+        color: white;
+        border: none;
+    }}
+    .stChatMessage {{direction: rtl; text-align: right;}}
+    .stTextInput > div > div > input {{direction: rtl; text-align: right;}}
+    .stTextArea > div > div > textarea {{direction: rtl; text-align: right;}}
+</style>
+""", unsafe_allow_html=True)
 
 with st.sidebar:
-    st.header("🎨 تخصيص الشكل والألوان")
-    selected_theme = st.selectbox("اختاري ألوان الواجهة:", list(themes.keys()))
-    st.divider()
     st.header("⚙️ لوحة تحكم الشركة")
     company_name = st.text_input("اسم الشركة / البراند", value="Hagar Company")
     whatsapp_number = st.text_input("رقم الواتساب للتواصل السريع", value="01000000000")
@@ -49,44 +86,6 @@ with st.sidebar:
         st.session_state.messages = []
         st.rerun()
 
-banner_gradient = themes[selected_theme]
-
-st.markdown(f"""
-<style>
-    @import url('https://googleapis.com');
-    html, body, [class*="css"] {{
-        font-family: 'Cairo', sans-serif;
-        direction: rtl;
-        text-align: right;
-    }}
-    .main-card {{
-        background: {banner_gradient};
-        padding: 28px;
-        border-radius: 18px;
-        color: white;
-        text-align: center;
-        margin-bottom: 22px;
-        box-shadow: 0 8px 20px rgba(255, 81, 47, 0.25);
-    }}
-    .main-title {{font-size: 2.1rem; font-weight: 700; margin-bottom: 6px;}}
-    .sub-title {{font-size: 1.05rem; opacity: 0.95;}}
-    div.stButton > button {{
-        border-radius: 12px;
-        border: 1px solid #FF512F;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }}
-    div.stButton > button:hover {{
-        background: {banner_gradient};
-        color: white;
-        border: none;
-    }}
-    .stChatMessage {{direction: rtl; text-align: right;}}
-    .stTextInput > div > div > input {{direction: rtl; text-align: right;}}
-    .stTextArea > div > div > textarea {{direction: rtl; text-align: right;}}
-</style>
-""", unsafe_allow_html=True)
-
 st.markdown(f"""
 <div class="main-card">
     <div class="main-title">🌟 المساعد الذكي لـ {company_name}</div>
@@ -97,8 +96,7 @@ st.markdown(f"""
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-
-st.write("💡 *أسئلة سريعة (اضغط للإجابة الفورية):*")
+st.markdown('<p style="direction: rtl; text-align: right; font-weight: bold;">💡 أسئلة سريعة (اضغط للإجابة الفورية):</p>', unsafe_allow_html=True)
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -118,7 +116,6 @@ for message in st.session_state.messages:
 user_input = st.chat_input("اكتب سؤالك أو استفسارك هنا...")
 prompt = st.session_state.pop("pending_prompt", None) or user_input
 
-
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -126,42 +123,40 @@ if prompt:
 
     with st.chat_message("assistant"):
         if not api_key:
-            st.error("⚠️ تأكد من وضع مفتاح GEMINI_API_KEY في ملف .env")
+            st.error("⚠️ تأكد من وضع مفتاح GEMINI_API_KEY في إعدادات Secrets")
         else:
             client = genai.Client(api_key=api_key)
             system_instruction = f"""
             أنت {assistant_role} تعمل لصالح '{company_name}'.
             أجب على أسئلة العملاء بلباقة واحترافية وباللهجة المصرية المهذبة.
+            التزم بالإملاء العربي الصحيح دائماً واكتب الكلمات كاملة مثل (يا فندم) بدون اختصار أو حذف حروف.
             اعتمد في إجاباتك على بيانات الشركة التالية:
             ---
-            التزم بالإملاء العربي الصحيح دائماً واكتب الكلمات كاملة مثل (يا فندم) بدون اختصار أو حذف حروف.
             {company_data}
             ---
             رقم الواتساب الرسمي للشركة هو: {whatsapp_number}.
             إذا طلب العميل الحجز أو الشراء أو سأل عن شيء غير موجود في البيانات، اعرض عليه التواصل مباشرة عبر واتساب على الرقم {whatsapp_number}.
-            اجعل إجاباتك قصيرة ومباشرة ومقنعة.
+            اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-            def stream_response():
-                response = client.models.generate_content_stream(
-                    model="gemini-3.8-flash",
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=system_instruction,
-                        temperature=0.3,
-                    ),
-                )
-                for chunk in response:
-                    if chunk.text:
-                        yield chunk.text
+            reply = None
+            for attempt in range(4):
+                try:
+                    response = client.models.generate_content(
+                        model="gemini-3.8-flash",
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=system_instruction,
+                            temperature=0.3,
+                        ),
+                    )
+                    reply = response.text
+                    break
+                except Exception:
+                    time.sleep(2)
 
-            for attempt in range(3):
-             try:
-                 reply = st.write_stream(stream_response)
-                 st.session_state.messages.append({"role": "assistant", "content": reply})
-                 break
-             except Exception:
-                 if attempt < 2:
-                     time.sleep(3)
-                 else:
-                     st.warning("الضغط مرتفع حالياً، جرب إرسال الرسالة مرة أخرى.")
+            if reply:
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+            else:
+                st.info("عذراً، المساعد مشغول حالياً، يرجى المحاولة مرة أخرى بعد قليل.")
