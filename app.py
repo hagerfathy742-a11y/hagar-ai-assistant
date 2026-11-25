@@ -137,19 +137,19 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-try:
-             available_models = [m.id for m in client.models.list().data if "whisper" not in m.id and "guard" not in m.id]
-             active_model = available_models[0]
-             chat_completion = client.chat.completions.create(
-                 messages=[
-                     {"role": "system", "content": system_instruction},
-                     {"role": "user", "content": prompt},
-                 ],
-                 model=active_model,
-                 temperature=0.3,
-             )
-            reply = chat_completion.choices[0].message.content
-            st.markdown(reply)
-            st.session_state.messages.append({"role": "assistant", "content": reply})
+            try:
+                available_models = [m.id for m in client.models.list().data if "whisper" not in m.id and "guard" not in m.id]
+                active_model = available_models[0]
+                chat_completion = client.chat.completions.create(
+                    messages=[
+                        {"role": "system", "content": system_instruction},
+                        {"role": "user", "content": prompt},
+                    ],
+                    model=active_model,
+                    temperature=0.3,
+                )
+                reply = chat_completion.choices[0].message.content
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
             except Exception as e:
                 st.error(f"حدث خطأ: {e}")
