@@ -5,9 +5,19 @@ from groq import Groq
 from pypdf import PdfReader
 
 load_dotenv()
-api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
 
-st.set_page_config(page_title="Hagar Company - المساعد الذكي", page_icon="🌟", layout="wide", initial_sidebar_state="collapsed")
+# جلب مفتاح API بأمان بدون خطأ لو ملف secrets مش موجود
+try:
+    api_key = st.secrets.get("GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+except Exception:
+    api_key = os.getenv("GROQ_API_KEY")
+
+st.set_page_config(
+    page_title="Hagar Company - المساعد الذكي",
+    page_icon="🌟",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 banner_gradient = "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)"
 
@@ -16,11 +26,6 @@ st.markdown(f"""
     @import url('https://googleapis.com');
     html, body, [class*="css"] {{
         font-family: 'Cairo', sans-serif;
-    }}
-    @media (max-width: 768px) {{
-        section[data-testid="stSidebar"] {{
-            display: none !important;
-        }}
     }}
     .main-card {{
         background: {banner_gradient};
@@ -68,10 +73,16 @@ with st.sidebar:
         if uploaded_file.name.endswith(".pdf"):
             reader = PdfReader(uploaded_file)
             for page in reader.pages:
-                company_data += page.extract_text() + "\n"
+                text = page.extract_text()
+                if text:
+                    company_data += text + "\n"
         else:
-            company_data = uploaded_file.read().decode("utf-8")
-        st.success("✅ تم ربط ملف الشركة بنجاح!")
+            company_data = uploaded_file.read().decode("utf-8", errors="ignore")
+        
+        if company_data.strip():
+            st.success("✅ تم ربط ملف الشركة بنجاح!")
+        else:
+            st.warning("⚠️ الملف المرفوع فارغ أو عبارة عن صور غير قابلة للقراءة.")
     else:
         company_data = st.text_area(
             "📝 أو اكتب تفاصيل المنتجات والأسعار هنا:",
@@ -121,7 +132,7 @@ if prompt:
 
     with st.chat_message("assistant"):
         if not api_key:
-            st.error("⚠️ تأكد من وضع مفتاح GROQ_API_KEY في إعدادات Secrets")
+            st.error("⚠️ تأكد من وضع مفتاح GROQ_API_KEY في ملف .env أو إعدادات Secrets")
         else:
             client = Groq(api_key=api_key)
             system_instruction = f"""
@@ -136,20 +147,18 @@ if prompt:
             إذا طلب العميل الحجز أو الشراء أو سأل عن شيء غير موجود في البيانات، اعرض عليه التواصل مباشرة عبر واتساب على الرقم {whatsapp_number}.
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
-            
-try:
-        models = [m.id for m in client.models.list().data if "orpheus" not in m.id and "whisper" not in m.id and "guard" not in m.id]
-        active_model = next(iter(models))
-        chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_instruction},
-                        {"role": "user", "content": prompt},
-                    ],
-                    model=active_model,
+
+            # إرسال سجل المحادثة بالكامل ليتذكر البوت السياق
+            api_messages = [{"role": "system", "content": system_instruction}] + st.session_state.messages
+
+            try:
+                chat_completion = client.chat.completions.create(
+                    messages=api_messages,
+                    model="llama-3.3-70b-versatile",
                     temperature=0.3,
-        ) 
-                reply = chat_completion.choices.message.content
+                )
+                reply = chat_completion.choices[0].message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
- except Exception as e:
-                st.error(f"حدث خطأ: {e}")
+            except Exception as e:
+                st.error(f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي:{e}")
