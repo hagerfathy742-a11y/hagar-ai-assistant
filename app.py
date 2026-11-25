@@ -147,7 +147,7 @@ try:
                     ],
                     model=active_model,
                     temperature=0.3,
-                )
+              ( 
                 reply = chat_completion.choices.message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
