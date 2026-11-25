@@ -152,13 +152,29 @@ if prompt:
             api_messages = [{"role": "system", "content": system_instruction}] + st.session_state.messages
 
             try:
+                # 1. جلب الموديلات المتاحة فعلياً في حسابك واستبعاد موديلات الصوت والحماية
+                models_list = [
+                    m.id for m in client.models.list().data
+                    if not any(word in m.id.lower() for word in ["whisper", "guard", "tts", "orpheus"])
+                ]
+                
+                # 2. ترتيب الأولوية لاختيار أفضل موديل شات متاح عندك
+                preferred_models = [
+                    "llama-3.3-70b-versatile",
+                    "openai/gpt-oss-120b",
+                    "llama-3.1-8b-instant",
+                    "openai/gpt-oss-20b"
+                ]
+                
+                active_model = next((m for m in preferred_models if m in models_list), models_list[0])
+
                 chat_completion = client.chat.completions.create(
                     messages=api_messages,
-                    model="llama-3.3-70b-versatile",
+                    model=active_model,
                     temperature=0.3,
                 )
                 reply = chat_completion.choices[0].message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
             except Exception as e:
-                st.error(f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي:{e}")
+                st.error(f"حدث خطأ أثناء الاتصال بالذكاء الاصطناعي: {e}")
