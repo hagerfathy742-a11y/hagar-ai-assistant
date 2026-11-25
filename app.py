@@ -148,8 +148,8 @@ try:
                  model=active_model,
                  temperature=0.3,
              )
-                reply = chat_completion.choices[0].message.content
-                st.markdown(reply)
-                st.session_state.messages.append({"role": "assistant", "content": reply})
+            reply = chat_completion.choices[0].message.content
+            st.markdown(reply)
+            st.session_state.messages.append({"role": "assistant", "content": reply})
             except Exception as e:
                 st.error(f"حدث خطأ: {e}")
