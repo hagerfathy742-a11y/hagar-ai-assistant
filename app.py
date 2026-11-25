@@ -10,7 +10,7 @@ load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
 st.set_page_config(page_title="Hagar Company - المساعد الذكي", page_icon="🌟", layout="wide", initial_sidebar_state="collapsed")
-
+themes = {
     "🌸 وردي بنفسجي عصري": "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)",
 }
 
