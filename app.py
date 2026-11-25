@@ -141,10 +141,10 @@ if prompt:
 
             reply = None
             last_err = ""
-            for model_name in ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash"]:
+for attempt in range(4):
                 try:
                     response = client.models.generate_content(
-                        model=model_name,
+                        model="gemini-3.8-flash",
                         contents=prompt,
                         config=types.GenerateContentConfig(
                             system_instruction=system_instruction,
@@ -155,10 +155,4 @@ if prompt:
                     break
                 except Exception as e:
                     last_err = str(e)
-                    continue
-
-            if reply:
-                st.markdown(reply)
-                st.session_state.messages.append({"role": "assistant", "content": reply})
-            else:
-                st.error(f"تفاصيل المشكلة: {last_err}")
+                    time.sleep(2)
