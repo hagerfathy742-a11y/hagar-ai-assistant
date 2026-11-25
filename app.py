@@ -139,20 +139,31 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-            reply = None
-            last_err = ""
-for attempt in range(4):
+st.write("✨ ", end="")
+            reply_placeholder = st.empty()
+            full_reply = ""
+            success = False
+
+            for model_name in ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash"]:
                 try:
-                    response = client.models.generate_content(
-                        model="gemini-3.8-flash",
+                    response = client.models.generate_content_stream(
+                        model=model_name,
                         contents=prompt,
                         config=types.GenerateContentConfig(
                             system_instruction=system_instruction,
                             temperature=0.3,
                         ),
                     )
-                    reply = response.text
+                    for chunk in response:
+                        if chunk.text:
+                            full_reply += chunk.text
+                            reply_placeholder.markdown(full_reply + "▌")
+                    reply_placeholder.markdown(full_reply)
+                    st.session_state.messages.append({"role": "assistant", "content": full_reply})
+                    success = True
                     break
-                except Exception as e:
-                    last_err = str(e)
-                    time.sleep(2)
+                except Exception:
+                    continue
+
+            if not success:
+                reply_placeholder.warning("السيرفر مزحوم لحظياً، اضغط الزر مرة أخرى.")
