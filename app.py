@@ -59,7 +59,7 @@ st.markdown(f"""
 
 with st.sidebar:
     st.header("⚙️ لوحة تحكم الشركة")
-    company_name = st.text_input("اسم الشركة / البراند", value="Hagar Company")
+    company_name = st.text_input("اسم الشركة / البراند", value=" شركه هاجر - Hagar Company")
     whatsapp_number = st.text_input("رقم الواتساب للتواصل السريع", value="01000000000")
     assistant_role = st.selectbox(
         "شخصية المساعد الذكي",
@@ -139,6 +139,7 @@ if prompt:
             أنت {assistant_role} تعمل لصالح '{company_name}'.
             أجب على أسئلة العملاء بلباقة واحترافية وباللهجة المصرية المهذبة.
             التزم بالإملاء العربي الصحيح دائماً واكتب الكلمات كاملة مثل (يا فندم) بدون اختصار أو حذف حروف.
+            تأكد دائماً من كتابة اسم الشركة بالعربية بشكل صحيح (هاجر) بالألف وليس (هجر).
             اعتمد في إجاباتك على بيانات الشركة التالية:
             ---
             {company_data}
