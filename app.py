@@ -139,7 +139,6 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-st.write("✨ ", end="")
             reply_placeholder = st.empty()
             full_reply = ""
             success = False
