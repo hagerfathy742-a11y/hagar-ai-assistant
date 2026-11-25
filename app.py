@@ -137,15 +137,17 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-            try:
-                chat_completion = client.chat.completions.create(
-                    messages=[
-                        {"role": "system", "content": system_instruction},
-                        {"role": "user", "content": prompt},
-                    ],
-                    model="llama-3.3-70b-versatile",
-                    temperature=0.3,
-                )
+try:
+             available_models = [m.id for m in client.models.list().data if "whisper" not in m.id and "guard" not in m.id]
+             active_model = available_models[0]
+             chat_completion = client.chat.completions.create(
+                 messages=[
+                     {"role": "system", "content": system_instruction},
+                     {"role": "user", "content": prompt},
+                 ],
+                 model=active_model,
+                 temperature=0.3,
+             )
                 reply = chat_completion.choices.message.content
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
