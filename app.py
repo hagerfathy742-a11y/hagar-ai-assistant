@@ -138,7 +138,7 @@ if prompt:
             """
 
             try:
-active_model = "llama-3.1-8b-instant"
+                active_model = "llama-3.1-8b-instant"
                 chat_completion = client.chat.completions.create(
                     messages=[
                         {"role": "system", "content": system_instruction},
