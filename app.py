@@ -8,6 +8,7 @@ from pypdf import PdfReader
 
 load_dotenv()
 api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+
 st.set_page_config(page_title="Hagar Company - المساعد الذكي", page_icon="🌟", layout="wide", initial_sidebar_state="collapsed")
 
 banner_gradient = "linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%)"
@@ -138,26 +139,26 @@ if prompt:
             اجعل إجاباتك منظمة ومقنعة للبيع.
             """
 
-reply = None
-         last_err = ""
-         for model_name in ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash"]:
-             try:
-                 response = client.models.generate_content(
-                     model=model_name,
-                     contents=prompt,
-                     config=types.GenerateContentConfig(
-                         system_instruction=system_instruction,
-                         temperature=0.3,
-                     ),
-                 )
-                 reply = response.text
-                 break
-             except Exception as e:
-                 last_err = str(e)
-                 continue
+            reply = None
+            last_err = ""
+            for model_name in ["gemini-3.8-flash", "gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash"]:
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=system_instruction,
+                            temperature=0.3,
+                        ),
+                    )
+                    reply = response.text
+                    break
+                except Exception as e:
+                    last_err = str(e)
+                    continue
 
-         if reply:
-             st.markdown(reply)
-             st.session_state.messages.append({"role": "assistant", "content": reply})
-         else:
-             st.error(f"تفاصيل المشكلة: {last_err}")
+            if reply:
+                st.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+            else:
+                st.error(f"تفاصيل المشكلة: {last_err}")
